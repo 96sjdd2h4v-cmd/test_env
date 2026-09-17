@@ -1,0 +1,7 @@
+#domainname           backendname
+multisite-a.local bk_varnish_a
+multisite-b.local bk_varnish_a
+multisite-c.local bk_varnish_b
+multisite-d.local bk_varnish_b
+domain-a.local    bk_varnish_a
+domain-b.local    bk_varnish_b

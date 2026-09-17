@@ -1,0 +1,4 @@
+multisite-a.local varnish_backend
+multisite-b.local varnish_backend
+domain-a.local varnish_backend
+domain-b.local varnish_backend

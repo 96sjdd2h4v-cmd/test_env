@@ -1,0 +1,25 @@
+{
+    "authentication": {
+        "blockUnknownUsers": true,
+        "class": "solr.BasicAuthPlugin",
+        "credentials": {
+            "admin": "[PASSWORD]"
+        }
+    },
+    "authorization": {
+        "class": "solr.RuleBasedAuthorizationPlugin",
+        "permissions": [
+            {
+                "name": "all",
+                "roles": [
+                    "admin"
+                ]
+            }
+        ],
+        "user-role-maps": {
+            "admin": [
+                "admin"
+            ]
+        }
+    }
+}
