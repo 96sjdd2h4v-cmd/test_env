@@ -5,5 +5,3 @@
 *.tar.gz
 .DS_Store
 .env
-/deploy/drupal_vm/startup_drupal.sh
-/deploy/services_vm/startup_services.sh
