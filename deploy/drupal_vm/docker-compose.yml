@@ -49,7 +49,6 @@ services:
     user: "82:82"
     container_name: drupal-php-a
     working_dir: /var/www/html
-    read_only: true
     tmpfs:
       - /tmp:exec
       - /run
@@ -80,7 +79,6 @@ services:
   cron-a:
     image: europe-west1-docker.pkg.dev/scalecity-sandbox-beau/image-repo/drupal-app:v1.0
     working_dir: /var/www/html
-    read_only: true
     tmpfs:
       - /tmp:exec
       - /run
@@ -104,7 +102,6 @@ services:
 
   nginx-a:
     image: nginxinc/nginx-unprivileged
-    read_only: true
     tmpfs:
       - /tmp
       - /var/cache/nginx
@@ -173,7 +170,6 @@ services:
     user: "82:82"
     container_name: drupal-php-b
     working_dir: /var/www/html
-    read_only: true
     tmpfs:
       - /tmp:exec
       - /run
@@ -204,7 +200,6 @@ services:
   cron-b:
     image: europe-west1-docker.pkg.dev/scalecity-sandbox-beau/image-repo/drupal-app:v1.0
     working_dir: /var/www/html
-    read_only: true
     tmpfs:
       - /tmp:exec
       - /run
@@ -228,7 +223,6 @@ services:
 
   nginx-b:
     image: nginxinc/nginx-unprivileged
-    read_only: true
     tmpfs:
       - /tmp
       - /var/cache/nginx
