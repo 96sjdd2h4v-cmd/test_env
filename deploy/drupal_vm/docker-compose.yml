@@ -15,12 +15,12 @@ services:
       - haproxy_net
     deploy:
       resources:
-       reservations:
-         cpus: '0.05'
-         memory: 32M
-       limits:
-         cpus: '0.5'
-         memory: 128M
+        reservations:
+          cpus: '0.05'
+          memory: 32M
+        limits:
+          cpus: '0.5'
+          memory: 128M
     depends_on:
       - varnish-a
       - varnish-b
@@ -35,13 +35,13 @@ services:
     volumes:
       - ./:/var/www/html:ro #bind
       - ./custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini:ro
-      - drupal_public_files:/var/www/html/web/sites/default/files:rw
-      - drupal_multisite_a_files:/var/www/html/web/sites/multisite-a.local/files:rw
-      - drupal_multisite_b_files:/var/www/html/web/sites/multisite-b.local/files:rw
+      - drupal_public_files:/var/www/html/sites/default/files:rw
+      - drupal_multisite_a_files:/var/www/html/sites/multisite-a.local/files:rw
+      - drupal_multisite_b_files:/var/www/html/sites/multisite-b.local/files:rw
     networks:
       - cluster_a_net
       - haproxy_net
-    command: ["sh", "-ec", "chown -R 82:82 /var/www/html/web/sites/default/files /var/www/html/web/sites/multisite-a.local/files /var/www/html/web/sites/multisite-b.local/files"]
+    command: ["sh", "-ec", "chown -R 82:82 /var/www/html/sites/default/files /var/www/html/sites/multisite-a.local/files /var/www/html/sites/multisite-b.local/files"]
 
 
   php-a:
@@ -56,9 +56,9 @@ services:
     volumes:
       - ./:/var/www/html:rw #bind
       - ./custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini:ro
-      - drupal_public_files:/var/www/html/web/sites/default/files:rw
-      - drupal_multisite_a_files:/var/www/html/web/sites/multisite-a.local/files:rw
-      - drupal_multisite_b_files:/var/www/html/web/sites/multisite-b.local/files:rw
+      - drupal_public_files:/var/www/html/sites/default/files:rw
+      - drupal_multisite_a_files:/var/www/html/sites/multisite-a.local/files:rw
+      - drupal_multisite_b_files:/var/www/html/sites/multisite-b.local/files:rw
     networks:
       varnish-a-net:
       cluster_a_net:
@@ -86,9 +86,9 @@ services:
       - /run
     volumes:
       - ./:/var/www/html:ro
-      - drupal_public_files:/var/www/html/web/sites/default/files:rw
-      - drupal_multisite_a_files:/var/www/html/web/sites/multisite-a.local/files:rw
-      - drupal_multisite_b_files:/var/www/html/web/sites/multisite-b.local/files:rw
+      - drupal_public_files:/var/www/html/sites/default/files:rw
+      - drupal_multisite_a_files:/var/www/html/sites/multisite-a.local/files:rw
+      - drupal_multisite_b_files:/var/www/html/sites/multisite-b.local/files:rw
     networks:
       - cluster_a_net
     deploy:
@@ -111,9 +111,9 @@ services:
       - /var/run
     volumes:
       - ./:/var/www/html:ro # bind
-      - drupal_public_files:/var/www/html/web/sites/default/files:ro
-      - drupal_multisite_a_files:/var/www/html/web/sites/multisite-a.local/files:ro
-      - drupal_multisite_b_files:/var/www/html/web/sites/multisite-b.local/files:ro
+      - drupal_public_files:/var/www/html/sites/default/files:ro
+      - drupal_multisite_a_files:/var/www/html/sites/multisite-a.local/files:ro
+      - drupal_multisite_b_files:/var/www/html/sites/multisite-b.local/files:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro #config
     networks:
       cluster_a_net:
@@ -138,7 +138,7 @@ services:
       cluster_a_net:
         aliases:
           - varnish
-    command: varnishd -F -a :80,PROXY -f /etc/varnish/default.vcl -s malloc,256m # start varnish protocol met config file en laat luisteren op MAX cache van 256MB
+    command: varnishd -F -a :80,PROXY -f /etc/varnish/default.vcl -s malloc,256m
     deploy:
       resources:
         reservations:
@@ -160,12 +160,12 @@ services:
     volumes:
       - ./:/var/www/html:ro #bind
       - ./custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini:ro
-      - drupal_multisite_c_files:/var/www/html/web/sites/multisite-c.local/files:rw
-      - drupal_multisite_d_files:/var/www/html/web/sites/multisite-d.local/files:rw
-      - drupal_domain_b_files:/var/www/html/web/sites/domain-b.local/files:rw
+      - drupal_multisite_c_files:/var/www/html/sites/multisite-c.local/files:rw
+      - drupal_multisite_d_files:/var/www/html/sites/multisite-d.local/files:rw
+      - drupal_domain_b_files:/var/www/html/sites/domain-b.local/files:rw
     networks:
       - cluster_b_net
-    command: ["sh", "-ec", "chown -R 82:82 /var/www/html/web/sites/multisite-c.local/files /var/www/html/web/sites/multisite-d.local/files /var/www/html/web/sites/domain-b.local/files"]
+    command: ["sh", "-ec", "chown -R 82:82 /var/www/html/sites/multisite-c.local/files /var/www/html/sites/multisite-d.local/files /var/www/html/sites/domain-b.local/files"]
 
 
   php-b:
@@ -180,9 +180,9 @@ services:
     volumes:
       - ./:/var/www/html:rw #bind
       - ./custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini:ro
-      - drupal_multisite_c_files:/var/www/html/web/sites/multisite-c.local/files:rw
-      - drupal_multisite_d_files:/var/www/html/web/sites/multisite-d.local/files:rw
-      - drupal_domain_b_files:/var/www/html/web/sites/domain-b.local/files:rw
+      - drupal_multisite_c_files:/var/www/html/sites/multisite-c.local/files:rw
+      - drupal_multisite_d_files:/var/www/html/sites/multisite-d.local/files:rw
+      - drupal_domain_b_files:/var/www/html/sites/domain-b.local/files:rw
     networks:
       haproxy_net:
       cluster_b_net:
@@ -210,9 +210,9 @@ services:
       - /run
     volumes:
       - ./:/var/www/html:ro
-      - drupal_multisite_c_files:/var/www/html/web/sites/multisite-c.local/files:rw
-      - drupal_multisite_d_files:/var/www/html/web/sites/multisite-d.local/files:rw
-      - drupal_domain_b_files:/var/www/html/web/sites/domain-b.local/files:rw
+      - drupal_multisite_c_files:/var/www/html/sites/multisite-c.local/files:rw
+      - drupal_multisite_d_files:/var/www/html/sites/multisite-d.local/files:rw
+      - drupal_domain_b_files:/var/www/html/sites/domain-b.local/files:rw
     networks:
       - cluster_b_net
     deploy:
@@ -235,9 +235,9 @@ services:
       - /var/run
     volumes:
       - ./:/var/www/html:ro # bind
-      - drupal_multisite_c_files:/var/www/html/web/sites/multisite-c.local/files:ro
-      - drupal_multisite_d_files:/var/www/html/web/sites/multisite-d.local/files:ro
-      - drupal_domain_b_files:/var/www/html/web/sites/domain-b.local/files:ro
+      - drupal_multisite_c_files:/var/www/html/sites/multisite-c.local/files:ro
+      - drupal_multisite_d_files:/var/www/html/sites/multisite-d.local/files:ro
+      - drupal_domain_b_files:/var/www/html/sites/domain-b.local/files:ro
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro #config
     networks:
       cluster_b_net:
@@ -262,7 +262,7 @@ services:
       cluster_b_net:
         aliases:
           - varnish 
-    command: varnishd -F -a :80,PROXY -f /etc/varnish/default.vcl -s malloc,256m # start varnish protocol met config file en laat luisteren op 
+    command: varnishd -F -a :80,PROXY -f /etc/varnish/default.vcl -s malloc,256m
     deploy:
       resources:
         reservations:
@@ -286,7 +286,6 @@ networks:
     driver: bridge
   varnish-b-net:
     driver: bridge
-  
 
 volumes:
   drupal_public_files:
@@ -295,5 +294,3 @@ volumes:
   drupal_multisite_c_files:
   drupal_multisite_d_files:
   drupal_domain_b_files:
-
-  

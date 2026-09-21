@@ -5,3 +5,5 @@
 *.tar.gz
 .DS_Store
 .env
+/Users/beaufrans/Downloads/DRUPAL docker/deploy/drupal_vm/startup_drupal.sh
+/Users/beaufrans/Downloads/DRUPAL docker/deploy/services_vm/startup_services.sh

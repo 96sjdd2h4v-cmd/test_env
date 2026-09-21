@@ -144,7 +144,7 @@ services:
     working_dir: /var/www/html
     restart: "no"
     volumes:
-      - ./:/var/www/html:ro #bind
+      - ./:/var/www/html:rw #bind
       - ./custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini:ro
       - drupal_public_files:/var/www/html/web/sites/default/files:rw
       - drupal_multisite_a_files:/var/www/html/web/sites/multisite-a.local/files:rw
@@ -173,7 +173,7 @@ services:
       - /tmp:exec
       - /run
     volumes:
-      - ./:/var/www/html:rw #bind
+      - ./:/var/www/html:ro #bind
       - ./custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini:ro
       - drupal_public_files:/var/www/html/web/sites/default/files:rw
       - drupal_multisite_a_files:/var/www/html/web/sites/multisite-a.local/files:rw
@@ -373,7 +373,7 @@ services:
       - /tmp:exec
       - /run
     volumes:
-      - ./:/var/www/html:rw #bind
+      - ./:/var/www/html:ro #bind
       - ./custom-php.ini:/usr/local/etc/php/conf.d/custom-php.ini:ro
       - drupal_multisite_c_files:/var/www/html/web/sites/multisite-c.local/files:rw
       - drupal_multisite_d_files:/var/www/html/web/sites/multisite-d.local/files:rw

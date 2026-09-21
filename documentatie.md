@@ -509,6 +509,8 @@ ik denk dat 2 vcpu 6 gb ram en 10 gb wel voldoende moet zijn.
 
 Network file system is nog niet nodig wanneer er maar 1 vm aanwezig is zoals nu.
 Maar wanneer er een tweede word toegevoegd is dit wel cruciaal. Het is belangrijk zodat bestanden die moeten gedeelt worden door meerdere vms hier ook allemaal aan kunnen.
+Ook handig voor wanneer de ene vm dan tijdelijke bestanden of afbeeldingen of styles daarin heeft opgeslagen dan kan de andere vm daan ook aan en moet er niet dubbel gewerkt worden.
+
 
 voor later ....
 
@@ -652,18 +654,37 @@ Dan heeft de load balancer wel een external ip adres nodig zodat je wel via brow
 
 2 vms
 
-drupal, varnish, haproxy, php-fpm
+drupal, varnish, haproxy, php-fpm, cron
 
-1 services vm in een aparte subnet
+1 services vm in een aparte subnet 
 -- postgresql
 -- redis
 -- solr
--- NFS filestore
+-- NFS filestore (minstens een terrabyte als je google service gebruikt)
+
+deze 2 vms in instance group? Of niet
 
 
-
+Denk dat best in apart subnet omdat dan alleen het ene subnet zijn range mag praten met dat andere subnet op die specifieke poorten van postgres, redis, solr, ... 
+Hierdoor denk ik dat er een betere grens is. 
 
 
 gcloud compute ssh vm-drupal -- -L 80:localhost:80 -L 443:localhost:443 -L 8443:localhost:8443 -L 8983:localhost:8983
 
 
+# Artifact registry
+
+Beveiligde storage in cloud voor gebouwde software en containers.
+Hiermee kan je ze makkelijk uitrollen in vms of containers.
+Veel sneller dan het ophalen en bouwen van een image. 
+
+gcloud auth configure-docker europe-west1-docker.pkg.dev 
+
+voor je een image kan pullen dan voer je dit uit:
+
+gcloud auth configure-docker europe-west1-docker.pkg.dev
+
+anders is de permission denied
+
+config files handmatig overgezet?
+ 
