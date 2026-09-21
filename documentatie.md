@@ -420,6 +420,14 @@ We gaan voor deze config gebruik maken van 1 instance die dan 1 index gebruikt p
 We gaan werken met een init solr container die based is op een busybox en want solr heeft bepaalde write rechten nodig om zijn cores te maken. Deze init container word daarna weer weggegooid. 
 Nu we willen ook graag met https naar dit dashboard gaan dus een extra certificate maken voor deze is nodig. "mkcert -pkcs12 -p12-file solr-ssl.keystore.p12 localhost solr 127.0.0.1 ::1"
 
+# Core
+
+Een core is een apart staande zoekindex binenn de solr server.
+De server is beetje een archief en de solr core is dan een lade in dat archief.
+
+Data dat word opgeslagen is effectieve zoek informatie.
+
+
 verder kijken naar zookeeper
 # instellen dat je daar een core hebt? Drupal heet mjet drupal configs in en je krijgt extra punten als je connectie hebt met je drupal site en dit kan gebruiken.
 Het instellen van een core per multisite in Solr.
@@ -451,6 +459,11 @@ Je hebt ook nog extra index options voor het bepalen van content dat daarwekelij
 
 Ik heb als test hier een search index gemaakt die gekoppeld is aan de solr server.
 Dan een paar field zoals title en body gemapped met fulltext datatype.
+
+docker exec -it drupal-php-b vendor/bin/drush search-api:index --uri=http://multisite-c.local 
+Vaak wilt het niet vanzelf indexen per batch.
+Force het met dit commando dan is dat direct klaart. 
+Vergeet ook zeker geen fields to te voegen want anders heeft het zoeken niet veel nut. 
 
 
 # Google cloud
@@ -567,3 +580,90 @@ drupal core toevoegen. NETWERKEN scheiden want deze staan niet juist ingesteld. 
 
 drupal-net met subnet drupal-subnet-euw1 met range 10.0.1.0/24
 Private google acces on --> voor vanuit private vm zonder public ip naar google services te sturen
+
+
+VM heeft geen extern public ip dus je kan er niet direct naartoe.
+Je kan alleen via browser ernaar toe als je lokaal IAP tunnel opent en dan kan je wel naar die domains gaan.
+gcloud compute ssh vm-drupal --tunnel-through-iap --zone=europe-west1-b -- -L 8983:localhost:8983 -L 8080:localhost:8080 -L 8443:localhost:8443
+
+#VPC
+
+we hebben een vpc met daarin een subnet.
+In dit subnet zit mijn vm. Deze vm draait mijn docker compose containers. 
+
+#Cold cache issue
+bij lage specificaties in cpu cores en meerdere multi sites 
+
+#GCLOUD SETUP
+
+# HUIDIGE SETUP
+Op de moment gebruik ik 1 vpc. Dus eigenlijk 1 private netwerk in de cloud.
+Hierbinnen heb ik een subnet genaamd drupal_subnet_euw met de ip range 10.0.1.0/24. In dit subnet leeft de vm waarop al mijn containers draaien.
+Ik heb de vm in dit subnet een static internal ip toegekend en geen external IP. Het interne ip adres is gebruikt voor het communiceren van de vm naar google cloud services zoals cloud NAT.
+Geen externe ip adres omdat we niet willen dat onze vm direct toegankelijk is vanaf het internet.
+
+# WERKING
+Hoe werkt het atm dan?
+
+VM (In subnet met internal ip) --> Cloud NAT --> Cloud Router --> internet
+
+Inkomend verkeer: De vm heeft geen extern ip adres maar google cloud heeft deze wel meer specifiek cloud router. 
+Cloud router stuurt het verkeer naar de juiste VM binnen het juiste VPC en subnet. Het weet dit door google cloud NAT configuratie want je configureert NAT voor een bepaald subnet. Dit betekent dat al het verkeer dat naar dit subnet komt wordt omgeleid en verwerkt door cloud NAT. Cloud NAT weet vervolgens door de verbinding die gemaakt wordt welk internal ip adres dit verkeer is. Deze stript vervolgens het internal ip adres af voor het google public ip adres van cloud NAT en stuurt het vervolgens door. 
+
+De vm is een E2 standard instance met 8GB ram 2vCPU en 30 GB disk storage. Het draait debian versie 13 trixie.
+Heel erg lightweight. Heeft alles wat nodig is. 
+
+Uitgaand verkeer: VM (Stript internal ip voor google public ip --> Cloud NAT --> Cloud Router --> internet)
+
+1 GROOT nadeel:
+Ik kan mijn website niet via een normale manier zien, want ik heb geen publiek ip adres. 
+Hoe werkt dit dan wel? Via een IAP tunnel. Deze stuurt verkeer door via een proxy dus je kan wel op je website surfen via die IAP tunnel die je hebt geopend op je lokale apparaat.
+
+Op deze vm draait nu een exacte kopie van mijn lokale setup dat ik dan download via een git repo op de container.
+
+
+GCLOUD costs:
+
+Met die vm van 2 vCPU en 8GB ram en een disk van 30GB zit ik rond de 50 dollar plus de vpc en dan de usage van cloud nat en google router zal dit wel iets duurder liggen.
+Voor deze setup is dat nog meer dan voldoende. Bij het starten van implementeren van NFS gaat dit waarschijnlijk nog wel wat duurder worden.
+
+
+
+Todo
+
+Feedback vragen aan yannick ivm met volgende stappen?
+
+
+# 2VM met nfs en load balancer
+Wanneer je van 1 naar 2 vms gaat onstaat er een probleem van. Welke request gaat naar waar?
+Load balancer is hier dus voor nodig. Maar welke soort?
+Een layer 4 load balancer (Regional external load balancer in google cloud) is hier niet geschikt voor. Deze kan niet de http headers lezen en kan alleen op ip adres of poort niveau bepalen.
+Een layer 7 load balancer (Global external application load balancer) is hier wel de juiste keuze want deze leest de https host names, regelt de ssl certificates en verdeelt het verkeer over de 2 vms. 
+nfs? Waarom is dat nodig? Wanneer je een file upload dan komt deze op de disk van 1 van de 2 vm's maar wat als dan je volgende request door de andere vm word afgehandelt?
+Dan lijkt het alsof je geen upload hebt gedaan. Hiervoor heb je nfs nodig. Het is eigenlijk een filestore server met daarop de directory met uploads bijvoorbeeld dat de 2 of meer vms dan delen zodat dit niet verder voorkomt.
+
+Welke google cloud services gaan we hier voor gebruiken?
+
+Voor de load balancer denk ik dat de bneste global app load balancer is.
+Voor nfs kan cloud flirestore of een vm met NFS server daarop met dan een persistent disk. 
+Database denk ik nog per vm houden als container? Of dan als aparte vm toevoegen. Google SQL is heel duur dus geen idee of dat een goede optie is.
+Redis is niet nodig voor drupal. Want standaard worden sessies opgeslagen in de database waar beide vms dan aan gelinkt worden.
+Dan heeft de load balancer wel een external ip adres nodig zodat je wel via browser aan je website kan. Waarschijnlijk ook dns setup doen dan.
+
+2 vms
+
+drupal, varnish, haproxy, php-fpm
+
+1 services vm in een aparte subnet
+-- postgresql
+-- redis
+-- solr
+-- NFS filestore
+
+
+
+
+
+gcloud compute ssh vm-drupal -- -L 80:localhost:80 -L 443:localhost:443 -L 8443:localhost:8443 -L 8983:localhost:8983
+
+

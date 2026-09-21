@@ -21,12 +21,23 @@ FROM drupal:11-php8.4-fpm-alpine AS app
 COPY --from=base /usr/local/lib/php/extensions /usr/local/lib/php/extensions
 COPY --from=base /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
 
+# Haal de officiële Composer binary op
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 # Kopieer het Drupal opstartscript
 COPY docker/solr/entrypoint.sh /usr/local/bin/app-entrypoint.sh
 RUN chmod +x /usr/local/bin/app-entrypoint.sh
 
-# Kopieer de geëxporteerde config
-COPY --chown=82:82 config /var/www/html/config
+# 1. Kopieer eerst alleen composer bestanden en draai de installatie
+COPY composer.json composer.lock /var/www/html/
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --no-scripts --no-autoloader
+
+# 2. Kopieer de rest van de applicatie
+COPY --chown=82:82 . /var/www/html/
+
+# 3. Genereer de geoptimaliseerde autoloader en zet eigendomsrechten op 82:82
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer dump-autoload --optimize \
+    && chown -R 82:82 /var/www/html/vendor
 
 # Pas helemaal onderaan in 'app' (vóór USER 82:82) het CA certificaat toevoegen
 COPY solr-ca.cr[t] /usr/local/share/ca-certificates/
