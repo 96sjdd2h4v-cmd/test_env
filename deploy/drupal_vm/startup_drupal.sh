@@ -1,6 +1,5 @@
 #!/bin/bash
 REPO_DIR="/home/beaufrans/drupal"
-PAT_TOKEN="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"
 REPO_URL="https://${PAT_TOKEN}@github.com/96sjdd2h4v-cmd/test_env.git"
 
 # 1. Repo ophalen
